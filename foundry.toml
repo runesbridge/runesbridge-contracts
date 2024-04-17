@@ -1,0 +1,11 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = '0.8.23'
+
+[rpc_endpoints]
+mainnet = "https://rpc.ankr.com/eth"
+go = "https://rpc.ankr.com/eth_goerli"
+fantom-testnet = "https://rpc.ankr.com/fantom_testnet"
+bsc = "https://rpc.ankr.com/bsc"
