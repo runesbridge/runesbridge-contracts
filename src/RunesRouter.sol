@@ -34,6 +34,10 @@ contract RunesRouter is
         string symbol,
         address owner
     );
+    event TokenAdded(address token);
+    event TokenRemoved(address token);
+    event ValidatorAdded(address validator);
+    event ValidatorRemoved(address validator);
 
     bytes32 public constant TYPEHASH =
         keccak256(
@@ -65,10 +69,12 @@ contract RunesRouter is
 
     function addToken(address token) external onlyOwner {
         acceptedTokens[token] = true;
+        emit TokenAdded(token);
     }
 
     function removeToken(address token) external onlyOwner {
         acceptedTokens[token] = false;
+        emit TokenRemoved(token);
     }
 
     function addValidator(address _address) public onlyOwner {
@@ -80,6 +86,7 @@ contract RunesRouter is
         indexes[_address] = _validators.length;
         isValidator[_address] = true;
         _validators.push(_address);
+        emit ValidatorAdded(_address);
     }
 
     function removeValidator(address _address) external onlyOwner {
@@ -99,6 +106,7 @@ contract RunesRouter is
         delete isValidator[_address];
         delete indexes[_address];
         _validators.pop();
+        emit ValidatorRemoved(_address);
     }
 
     function deposit(
