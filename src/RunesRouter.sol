@@ -85,6 +85,7 @@ contract RunesRouter is
     function removeValidator(address _address) external onlyOwner {
         require(isValidator[_address], "address not exist");
         require(indexes[_address] < _validators.length, "index out of range");
+        require(_validators.length > 1, "cannot remove all validators");
 
         uint256 index = indexes[_address];
         uint256 lastIndex = _validators.length - 1;
@@ -127,6 +128,8 @@ contract RunesRouter is
             signatures.length == _validators.length,
             "invalid length of signatures"
         );
+        require(_validators.length > 0, "no validators");
+
         for (uint i = 0; i < _validators.length; i++) {
             require(
                 _verify(
