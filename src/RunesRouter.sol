@@ -60,6 +60,7 @@ contract RunesRouter is
         _addValidator(_validator2);
         _addValidator(_validator3);
         __Ownable_init(_msgSender());
+        __EIP712_init("RunesRouter", "1");
     }
 
     function addToken(address token) external onlyOwner {
