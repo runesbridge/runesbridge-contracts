@@ -28,12 +28,6 @@ contract RunesRouter is
         string txHash,
         uint256 chainId
     );
-    event TokenCreated(
-        address indexed token,
-        string name,
-        string symbol,
-        address owner
-    );
     event TokenAdded(address token);
     event TokenRemoved(address token);
     event ValidatorAdded(address validator);
@@ -137,7 +131,7 @@ contract RunesRouter is
             "invalid length of signatures"
         );
         require(_validators.length > 0, "no validators");
-        require(block.chainId == chainId, "invalid chainId");
+        require(block.chainid == chainId, "invalid chainId");
 
         for (uint i = 0; i < _validators.length; i++) {
             require(
