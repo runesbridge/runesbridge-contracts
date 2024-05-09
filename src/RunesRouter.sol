@@ -129,6 +129,7 @@ contract RunesRouter is
             "invalid length of signatures"
         );
         require(_validators.length > 0, "no validators");
+        require(block.chainId == chainId, "invalid chainId");
 
         for (uint i = 0; i < _validators.length; i++) {
             require(
