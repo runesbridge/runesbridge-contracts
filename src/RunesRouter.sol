@@ -32,6 +32,7 @@ contract RunesRouter is
     event TokenRemoved(address token);
     event ValidatorAdded(address validator);
     event ValidatorRemoved(address validator);
+    event BridgeFeeSet(uint256 fee);
 
     bytes32 public constant TYPEHASH =
         keccak256(
@@ -43,6 +44,7 @@ contract RunesRouter is
     mapping(string => bool) public txProcessed;
     mapping(address => bool) public acceptedTokens;
     address[] private _validators;
+    uint256 bridgeFee;
 
     modifier notProcessed(string memory txhash) {
         require(!txProcessed[txhash], "tx already processed");
@@ -73,6 +75,15 @@ contract RunesRouter is
 
     function addValidator(address _address) public onlyOwner {
         _addValidator(_address);
+    }
+
+    function setBridgeFee(uint256 _fee) external onlyOwner {
+        bridgeFee = _fee;
+        emit BridgeFeeSet(_fee);
+    }
+
+    function getBridgeFee() external view returns (uint256) {
+        return bridgeFee;
     }
 
     function _addValidator(address _address) internal {
@@ -108,12 +119,11 @@ contract RunesRouter is
         string memory to,
         uint256 amount,
         uint256 chainId
-    ) external whenNotPaused {
+    ) external payable whenNotPaused {
         require(acceptedTokens[token], "token not accepted");
-        uint256 balance = IERC20(token).balanceOf(_msgSender());
+        require(amount > 0, "amount must be greater than 0");
+        require(msg.value >= bridgeFee, "invalid bridge fee");
         IERC20(token).transferFrom(_msgSender(), address(this), amount);
-        uint256 newBalance = IERC20(token).balanceOf(_msgSender());
-        amount = balance - newBalance;
 
         emit Deposit(token, _msgSender(), to, amount, chainId);
     }
