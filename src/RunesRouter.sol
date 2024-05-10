@@ -127,7 +127,7 @@ contract RunesRouter is
         uint256 balance = IERC20(token).balanceOf(address(this));
         IERC20(token).transferFrom(_msgSender(), address(this), amount);
         uint256 newBalance = IERC20(token).balanceOf(address(this));
-        amount = balance - newBalance;
+        amount = newBalance - balance;
         emit Deposit(token, _msgSender(), to, amount, chainId);
     }
 
