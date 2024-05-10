@@ -218,4 +218,14 @@ contract RunesRouter is
                 )
             );
     }
+
+    function rescueETH(uint256 amount) external onlyOwner {
+        if (amount == 0) {
+            amount = address(this).balance;
+        }
+        (bool _sent, ) = payable(_msgSender()).call{value: amount}("");
+        require(_sent, "send ETH failed");
+    }
+
+    receive() external payable {}
 }
