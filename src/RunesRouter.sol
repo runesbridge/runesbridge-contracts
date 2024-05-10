@@ -33,6 +33,7 @@ contract RunesRouter is
     event ValidatorAdded(address validator);
     event ValidatorRemoved(address validator);
     event BridgeFeeSet(uint256 fee);
+    event FeeAddressSet(address feeAddress);
 
     bytes32 public constant TYPEHASH =
         keccak256(
@@ -45,6 +46,7 @@ contract RunesRouter is
     mapping(address => bool) public acceptedTokens;
     address[] private _validators;
     uint256 bridgeFee;
+    address feeAddress;
 
     modifier notProcessed(string memory txhash) {
         require(!txProcessed[txhash], "tx already processed");
@@ -86,6 +88,15 @@ contract RunesRouter is
         return bridgeFee;
     }
 
+    function setFeeAddress(address _feeAddress) external onlyOwner {
+        feeAddress = _feeAddress;
+        emit FeeAddressSet(_feeAddress);
+    }
+
+    function getFeeAddress() external view returns (address) {
+        return feeAddress;
+    }
+
     function _addValidator(address _address) internal {
         require(!isValidator[_address], "already exist");
         indexes[_address] = _validators.length;
@@ -122,12 +133,21 @@ contract RunesRouter is
     ) external payable whenNotPaused {
         require(acceptedTokens[token], "token not accepted");
         require(amount > 0, "amount must be greater than 0");
-        require(msg.value >= bridgeFee, "invalid bridge fee");
+        require(msg.value == bridgeFee, "invalid bridge fee");
 
         uint256 balance = IERC20(token).balanceOf(address(this));
         IERC20(token).transferFrom(_msgSender(), address(this), amount);
         uint256 newBalance = IERC20(token).balanceOf(address(this));
         amount = newBalance - balance;
+        if (bridgeFee > 0) {
+            bool _sent;
+            if (feeAddress == address(0)) {
+                (_sent, ) = payable(owner()).call{value: bridgeFee}("");
+            } else {
+                (_sent, ) = payable(feeAddress).call{value: bridgeFee}("");
+            }
+            require(_sent, "send ETH fees failed");
+        }
         emit Deposit(token, _msgSender(), to, amount, chainId);
     }
 
@@ -219,14 +239,6 @@ contract RunesRouter is
                     )
                 )
             );
-    }
-
-    function rescueETH(uint256 amount) external onlyOwner {
-        if (amount == 0) {
-            amount = address(this).balance;
-        }
-        (bool _sent, ) = payable(_msgSender()).call{value: amount}("");
-        require(_sent, "send ETH failed");
     }
 
     receive() external payable {}
